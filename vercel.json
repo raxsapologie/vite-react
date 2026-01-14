@@ -1,6 +1,7 @@
 {
-  "cleanUrls": true,
-  "framework": null,
-  "installCommand": "echo 'no install needed'",
-  "buildCommand": "echo 'no build needed'"
+  "version": 2,
+  "public": true,
+  "builds": [
+    { "src": "index.html", "use": "@vercel/static" }
+  ]
 }
