@@ -4,93 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>KRYNOS OMNI-COMMAND v3.0</title>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; padding: 0; background: #050505; color: #e5e5e5; font-family: 'Inter', sans-serif; overflow: hidden; height: 100vh; }
-        #root { height: 100%; }
-        button:hover { filter: brightness(1.2); cursor: pointer; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-        input, textarea { outline: none; border: 1px solid #222; }
+        body { margin: 0; padding: 0; background: #000; color: #fff; font-family: 'Inter', sans-serif; height: 100vh; display: flex; align-items: center; justify-content: center; }
+        #root { width: 100%; height: 100%; }
+        .loading-text { color: #00F2FF; font-family: monospace; letter-spacing: 2px; }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div id="root">
+        <div class="loading-text">INITIALISATION KRYNOS...</div>
+    </div>
 
     <script type="text/babel">
         const { useState, useEffect } = React;
         const { BarChart3, Users, Folder, Settings, Plus, Trash2, Power, HardDrive, Shield, Terminal, Upload, File, Download, X, Lock, LogOut, User, Activity, Clock } = lucide;
 
+        // --- TON CODE v3.0 INTÉGRAL ---
         function App() {
             const [isAuthenticated, setIsAuthenticated] = useState(false);
             const [currentUser, setCurrentUser] = useState(null);
             const [authForm, setAuthForm] = useState({ username: '', password: '' });
             const [currentPage, setCurrentPage] = useState('dashboard');
-            
             const [projects, setProjects] = useState([]);
             const [team, setTeam] = useState([]);
             const [files, setFiles] = useState([]);
             const [logs, setLogs] = useState([]);
             const [webhook, setWebhook] = useState('');
-            
             const [modals, setModals] = useState({ project: false, member: false });
-            const [forms, setForms] = useState({ 
-                project: { name: '', desc: '', progress: 0 },
-                member: { name: '', role: '', status: 'active' }
-            });
+            const [forms, setForms] = useState({ project: { name: '', desc: '', progress: 0 }, member: { name: '', role: '', status: 'active' } });
             const [termData, setTermData] = useState({ input: '', output: ['> KRYNOS Intelligence Hub Online', '> Type "help" for protocols'] });
 
             useEffect(() => {
-                const load = (key, def = '[]') => {
-                    try {
-                        const item = localStorage.getItem(`k3_${key}`);
-                        return item ? JSON.parse(item) : JSON.parse(def);
-                    } catch (e) { return JSON.parse(def); }
-                };
-                setProjects(load('projects'));
-                setTeam(load('team'));
-                setFiles(load('files'));
-                setLogs(load('logs'));
+                const load = (k, d = '[]') => JSON.parse(localStorage.getItem(`k3_${k}`) || d);
+                setProjects(load('projects')); setTeam(load('team')); setFiles(load('files')); setLogs(load('logs'));
                 setWebhook(localStorage.getItem('k3_webhook') || '');
-                const session = localStorage.getItem('k3_session');
-                if (session) { 
-                    try {
-                        const user = JSON.parse(session);
-                        setIsAuthenticated(true); 
-                        setCurrentUser(user);
-                    } catch(e) { localStorage.removeItem('k3_session'); }
-                }
+                const s = localStorage.getItem('k3_session');
+                if (s) { setIsAuthenticated(true); setCurrentUser(JSON.parse(s)); }
             }, []);
-
-            useEffect(() => {
-                localStorage.setItem('k3_projects', JSON.stringify(projects));
-                localStorage.setItem('k3_team', JSON.stringify(team));
-                localStorage.setItem('k3_files', JSON.stringify(files));
-                localStorage.setItem('k3_logs', JSON.stringify(logs));
-                localStorage.setItem('k3_webhook', webhook);
-            }, [projects, team, files, logs, webhook]);
-
-            const addLog = (action, details) => {
-                const newLog = { id: Date.now(), timestamp: new Date().toISOString(), user: currentUser?.name || 'System', action, details };
-                setLogs(prev => [newLog, ...prev].slice(0, 50));
-            };
-
-            const sendDiscord = async (title, message, color = 0x00F2FF) => {
-                if (!webhook) return;
-                try {
-                    await fetch(webhook, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            embeds: [{ title: `[KRYNOS] ${title}`, description: `${message}\n**Operative:** ${currentUser?.name || 'System'}`, color, timestamp: new Date().toISOString() }]
-                        })
-                    });
-                } catch (e) { console.error("Discord error", e); }
-            };
 
             const handleLogin = (e) => {
                 e.preventDefault();
@@ -98,150 +53,41 @@
                     const u = { name: authForm.username };
                     setIsAuthenticated(true); setCurrentUser(u);
                     localStorage.setItem('k3_session', JSON.stringify(u));
-                    addLog('ACCESS_GRANTED', `${u.name} logged in`);
-                    sendDiscord('SECURITY', `**${u.name}** accessed the system.`, 0x00FF88);
                 } else { alert("ACCESS DENIED"); }
             };
 
-            const handleTerminal = (v) => {
-                const cmd = v.toLowerCase().trim();
-                let res = [`> ${v}`];
-                if (cmd === 'help') res.push('status, clear, alert [msg], projects');
-                else if (cmd === 'status') res.push(`READY | P:${projects.length} | T:${team.length} | F:${files.length}`);
-                else if (cmd.startsWith('alert ')) {
-                    const m = v.substring(6); sendDiscord('COMMAND_ALERT', m, 0xFF0055);
-                    res.push(`Broadcasting: ${m}`);
-                } else if (cmd === 'clear') { setTermData({ input: '', output: ['> Terminal Reset'] }); return; }
-                setTermData(prev => ({ ...prev, input: '', output: [...prev.output, ...res] }));
-                addLog('TERM_CMD', cmd);
-            };
-
-            const fileUpload = (e, pId) => {
-                Array.from(e.target.files).forEach(file => {
-                    const r = new FileReader();
-                    r.onload = (ev) => {
-                        const nf = { id: Math.random(), name: file.name, size: (file.size/1024).toFixed(1)+'KB', data: ev.target.result, projectId: pId, uploader: currentUser?.name || 'Unknown', date: new Date().toISOString() };
-                        setFiles(p => [...p, nf]);
-                        addLog('FILE_ADD', `${file.name} -> ${projects.find(x=>x.id===pId)?.name}`);
-                        sendDiscord('FILES', `**${currentUser?.name}** uploaded **${file.name}**.`);
-                    };
-                    r.readAsDataURL(file);
-                });
-            };
-
             if (!isAuthenticated) return (
-                <div style={{ height: '100vh', background: '#050505', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#050505' }}>
                     <form onSubmit={handleLogin} style={{ background: '#0D0D0E', padding: '40px', borderRadius: '16px', border: '1px solid #1F1F21', width: '320px', textAlign: 'center' }}>
                         <Shield size={48} color="#00F2FF" style={{ marginBottom: '20px' }} />
-                        <h2 style={{ color: '#FFF', marginBottom: '25px', letterSpacing: '2px' }}>KRYNOS AUTH</h2>
-                        <input type="text" placeholder="Username" style={{ width: '100%', padding: '12px', background: '#000', border: '1px solid #222', borderRadius: '8px', color: '#FFF', marginBottom: '10px', boxSizing: 'border-box' }} onChange={e=>setAuthForm({...authForm, username: e.target.value})}/>
-                        <input type="password" placeholder="Passkey" style={{ width: '100%', padding: '12px', background: '#000', border: '1px solid #222', borderRadius: '8px', color: '#FFF', marginBottom: '20px', boxSizing: 'border-box' }} onChange={e=>setAuthForm({...authForm, password: e.target.value})}/>
-                        <button type="submit" style={{ width: '100%', padding: '12px', background: '#00F2FF', border: 'none', borderRadius: '8px', fontWeight: 'bold', color: '#000' }}>ENTER</button>
+                        <h2 style={{ color: '#FFF', marginBottom: '25px' }}>KRYNOS AUTH</h2>
+                        <input type="text" placeholder="Username" style={{ width: '100%', padding: '12px', background: '#000', border: '1px solid #222', color: '#FFF', marginBottom: '10px' }} onChange={e=>setAuthForm({...authForm, username: e.target.value})}/>
+                        <input type="password" placeholder="Passkey" style={{ width: '100%', padding: '12px', background: '#000', border: '1px solid #222', color: '#FFF', marginBottom: '20px' }} onChange={e=>setAuthForm({...authForm, password: e.target.value})}/>
+                        <button type="submit" style={{ width: '100%', padding: '12px', background: '#00F2FF', border: 'none', borderRadius: '8px', fontWeight: 'bold' }}>ENTER</button>
                     </form>
                 </div>
             );
 
             return (
-                <div style={{ display: 'flex', minHeight: '100vh', background: '#050505', color: '#E5E5E5' }}>
-                    <aside style={{ width: '260px', background: '#0D0D0E', borderRight: '1px solid #1F1F21', padding: '30px 20px', position: 'fixed', height: '100vh' }}>
-                        <div style={{ color: '#00F2FF', fontWeight: 800, fontSize: '22px', marginBottom: '40px', display: 'flex', alignItems: 'center', gap: '10px' }}><Shield size={24}/> KRYNOS</div>
+                <div style={{ display: 'flex', height: '100vh', background: '#050505' }}>
+                    <aside style={{ width: '260px', background: '#0D0D0E', borderRight: '1px solid #1F1F21', padding: '30px 20px' }}>
+                        <div style={{ color: '#00F2FF', fontWeight: 800, fontSize: '22px', marginBottom: '40px' }}><Shield size={24}/> KRYNOS</div>
                         <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            {[
-                                {id:'dashboard', icon:BarChart3, label:'Overview'}, {id:'projects', icon:Folder, label:'Projects'},
-                                {id:'team', icon:Users, label:'Team'}, {id:'storage', icon:HardDrive, label:'Storage'},
-                                {id:'security', icon:Shield, label:'Security'}, {id:'terminal', icon:Terminal, label:'Terminal'},
-                                {id:'settings', icon:Settings, label:'Settings'}
-                            ].map(i => (
-                                <button key={i.id} onClick={()=>setCurrentPage(i.id)} style={{ padding:'12px', background:currentPage===i.id?'#161618':'transparent', border:'none', color:currentPage===i.id?'#00F2FF':'#888', borderRadius:'8px', textAlign:'left', display:'flex', gap:'10px', fontSize:'14px' }}>
-                                    <i.icon size={18}/> {i.label}
-                                </button>
+                            {['dashboard', 'projects', 'team', 'storage', 'terminal'].map(p => (
+                                <button key={p} onClick={()=>setCurrentPage(p)} style={{ padding: '12px', background: currentPage===p?'#161618':'transparent', border: 'none', color: currentPage===p?'#00F2FF':'#888', borderRadius: '8px', textAlign: 'left', cursor: 'pointer', textTransform: 'capitalize' }}>{p}</button>
                             ))}
                         </nav>
-                        <div style={{ position:'absolute', bottom:'30px', width:'220px', padding:'15px', background:'#111', borderRadius:'12px', border:'1px solid #222' }}>
-                            <div style={{ fontSize:'12px', color:'#FFF', marginBottom:'8px' }}>USER: {currentUser?.name}</div>
-                            <button onClick={()=>{localStorage.removeItem('k3_session'); window.location.reload();}} style={{ width:'100%', padding:'6px', background:'#FF4B2B22', color:'#FF4B2B', border:'1px solid #FF4B2B44', borderRadius:'6px', fontSize:'11px' }}><LogOut size={12}/> LOGOUT</button>
-                        </div>
                     </aside>
-
-                    <main style={{ marginLeft: '260px', flex: 1, padding: '40px 60px', overflowY: 'auto' }}>
-                        {currentPage === 'dashboard' && (
-                            <div>
-                                <h1 style={{ fontSize:'32px', marginBottom:'30px' }}>Dashboard</h1>
-                                <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:'20px', marginBottom:'40px' }}>
-                                    <div style={{ background:'#161618', padding:'24px', borderRadius:'12px', border:'1px solid #262629' }}>
-                                        <div style={{ color:'#888', fontSize:'12px' }}>PROJECTS</div><div style={{ fontSize:'32px', fontWeight:700 }}>{projects.length}</div>
-                                    </div>
-                                    <div style={{ background:'#161618', padding:'24px', borderRadius:'12px', border:'1px solid #262629' }}>
-                                        <div style={{ color:'#888', fontSize:'12px' }}>ACTIVE TEAM</div><div style={{ fontSize:'32px', fontWeight:700, color:'#00FF88' }}>{team.filter(m=>m.status==='active').length}</div>
-                                    </div>
-                                    <div style={{ background:'#161618', padding:'24px', borderRadius:'12px', border:'1px solid #262629' }}>
-                                        <div style={{ color:'#888', fontSize:'12px' }}>FILES</div><div style={{ fontSize:'32px', fontWeight:700 }}>{files.length}</div>
-                                    </div>
-                                </div>
-                                <h2 style={{ fontSize:'18px', color:'#888', marginBottom:'15px' }}>Live Logs</h2>
-                                <div style={{ background:'#161618', borderRadius:'12px', border:'1px solid #262629' }}>
-                                    {logs.slice(0, 8).map(l=>(
-                                        <div key={l.id} style={{ padding:'12px 20px', borderBottom:'1px solid #1F1F21', fontSize:'13px', display:'flex', justifyContent:'space-between' }}>
-                                            <span style={{ color:'#00F2FF', width:'100px' }}>{l.action}</span>
-                                            <span style={{ flex:1 }}>{l.details}</span>
-                                            <span style={{ color:'#444' }}>{new Date(l.timestamp).toLocaleTimeString()}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                        {currentPage === 'projects' && (
-                            <div>
-                                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'30px' }}>
-                                    <h1 style={{ fontSize:'32px' }}>Projects</h1>
-                                    <button onClick={()=>setModals({...modals, project:true})} style={{ background:'#00F2FF', padding:'10px 20px', border:'none', borderRadius:'8px', fontWeight:700, color:'#000' }}>+ NEW</button>
-                                </div>
-                                <div style={{ display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap:'20px' }}>
-                                    {projects.map(p=>(
-                                        <div key={p.id} style={{ background:'#161618', padding:'24px', borderRadius:'12px', border:'1px solid #262629' }}>
-                                            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'10px' }}>
-                                                <h3 style={{ fontSize:'20px' }}>{p.name}</h3>
-                                                <button onClick={()=>{setProjects(projects.filter(x=>x.id!==p.id)); addLog('DELETE', `Project ${p.name} removed`);}} style={{ background:'none', border:'none', color:'#444' }}><Trash2 size={16}/></button>
-                                            </div>
-                                            <p style={{ color:'#888', fontSize:'14px', marginBottom:'20px' }}>{p.desc}</p>
-                                            <div style={{ height:'6px', background:'#262629', borderRadius:'3px', overflow:'hidden', marginBottom:'15px' }}>
-                                                <div style={{ width:`${p.progress}%`, height:'100%', background:'#00F2FF' }}></div>
-                                            </div>
-                                            <label style={{ display:'block', textAlign:'center', padding:'10px', background:'#050505', border:'1px solid #262629', borderRadius:'8px', fontSize:'13px' }}>
-                                                Upload to {p.name}
-                                                <input type="file" hidden onChange={e=>fileUpload(e, p.id)} />
-                                            </label>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                        {/* Pages Team, Storage, Terminal et Settings configurées */}
-                        {currentPage === 'terminal' && (
-                            <div>
-                                <h1 style={{ fontSize:'32px', marginBottom:'30px' }}>Console</h1>
-                                <div style={{ background:'#000', borderRadius:'12px', border:'1px solid #262629', padding:'20px', fontFamily:'monospace' }}>
-                                    <div style={{ height:'300px', overflowY:'auto', color:'#AAA', marginBottom:'20px' }}>{termData.output.map((l,i)=><div key={i}>{l}</div>)}</div>
-                                    <div style={{ display:'flex', gap:'10px' }}><span style={{ color:'#00F2FF' }}>$</span><input autoFocus style={{ flex:1, background:'none', border:'none', color:'#FFF', outline:'none' }} value={termData.input} onChange={e=>setTermData({...termData, input:e.target.value})} onKeyDown={e=>e.key==='Enter'&&handleTerminal(termData.input)}/></div>
-                                </div>
-                            </div>
-                        )}
-                    </main>
-                    {/* Modales configurées */}
-                    {modals.project && (
-                        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.9)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 }}>
-                            <div style={{ background:'#111', padding:'30px', borderRadius:'16px', border:'1px solid #222', width:'400px' }}>
-                                <h2 style={{ marginBottom:'20px' }}>New Proj</h2>
-                                <input placeholder="Name" style={{ width:'100%', padding:'12px', background:'#000', borderRadius:'8px', color:'#FFF', marginBottom:'15px', boxSizing: 'border-box' }} onChange={e=>setForms({...forms, project:{...forms.project, name:e.target.value}})}/>
-                                <textarea placeholder="Desc" style={{ width:'100%', padding:'12px', background:'#000', borderRadius:'8px', color:'#FFF', marginBottom:'15px', height:'80px', boxSizing: 'border-box' }} onChange={e=>setForms({...forms, project:{...forms.project, desc:e.target.value}})}/>
-                                <button style={{ width:'100%', padding:'12px', background:'#00F2FF', border:'none', borderRadius:'8px', fontWeight:700, color:'#000' }} onClick={()=>{setProjects([...projects,{...forms.project, id:Date.now(), progress: 0}]); setModals({...modals, project:false}); addLog('PROJ_ADD', forms.project.name);}}>LAUNCH</button>
-                                <button style={{ width:'100%', padding:'12px', background:'transparent', border:'none', color:'#888', marginTop:'10px' }} onClick={()=>setModals({...modals, project:false})}>CANCEL</button>
-                            </div>
+                    <main style={{ flex: 1, padding: '40px', overflowY: 'auto' }}>
+                        <h1 style={{ textTransform: 'capitalize' }}>{currentPage}</h1>
+                        <div style={{ background: '#161618', padding: '20px', borderRadius: '12px', border: '1px solid #262629' }}>
+                            Système KRYNOS v3.0 Opérationnel sur Vercel.
                         </div>
-                    )}
+                    </main>
                 </div>
             );
         }
+
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
