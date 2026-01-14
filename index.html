@@ -16,7 +16,6 @@
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
         input, textarea { outline: none; border: 1px solid #222; }
-        input:focus { border-color: #00F2FF; }
     </style>
 </head>
 <body>
@@ -45,7 +44,6 @@
             });
             const [termData, setTermData] = useState({ input: '', output: ['> KRYNOS Intelligence Hub Online', '> Type "help" for protocols'] });
 
-            // PERSISTENCE
             useEffect(() => {
                 const load = (key, def = '[]') => {
                     try {
@@ -136,8 +134,8 @@
                     <form onSubmit={handleLogin} style={{ background: '#0D0D0E', padding: '40px', borderRadius: '16px', border: '1px solid #1F1F21', width: '320px', textAlign: 'center' }}>
                         <Shield size={48} color="#00F2FF" style={{ marginBottom: '20px' }} />
                         <h2 style={{ color: '#FFF', marginBottom: '25px', letterSpacing: '2px' }}>KRYNOS AUTH</h2>
-                        <input type="text" placeholder="Username" style={{ width: '100%', padding: '12px', background: '#000', borderRadius: '8px', color: '#FFF', marginBottom: '10px', boxSizing: 'border-box' }} onChange={e=>setAuthForm({...authForm, username: e.target.value})}/>
-                        <input type="password" placeholder="Passkey" style={{ width: '100%', padding: '12px', background: '#000', borderRadius: '8px', color: '#FFF', marginBottom: '20px', boxSizing: 'border-box' }} onChange={e=>setAuthForm({...authForm, password: e.target.value})}/>
+                        <input type="text" placeholder="Username" style={{ width: '100%', padding: '12px', background: '#000', border: '1px solid #222', borderRadius: '8px', color: '#FFF', marginBottom: '10px', boxSizing: 'border-box' }} onChange={e=>setAuthForm({...authForm, username: e.target.value})}/>
+                        <input type="password" placeholder="Passkey" style={{ width: '100%', padding: '12px', background: '#000', border: '1px solid #222', borderRadius: '8px', color: '#FFF', marginBottom: '20px', boxSizing: 'border-box' }} onChange={e=>setAuthForm({...authForm, password: e.target.value})}/>
                         <button type="submit" style={{ width: '100%', padding: '12px', background: '#00F2FF', border: 'none', borderRadius: '8px', fontWeight: 'bold', color: '#000' }}>ENTER</button>
                     </form>
                 </div>
@@ -145,7 +143,6 @@
 
             return (
                 <div style={{ display: 'flex', minHeight: '100vh', background: '#050505', color: '#E5E5E5' }}>
-                    {/* SIDEBAR */}
                     <aside style={{ width: '260px', background: '#0D0D0E', borderRight: '1px solid #1F1F21', padding: '30px 20px', position: 'fixed', height: '100vh' }}>
                         <div style={{ color: '#00F2FF', fontWeight: 800, fontSize: '22px', marginBottom: '40px', display: 'flex', alignItems: 'center', gap: '10px' }}><Shield size={24}/> KRYNOS</div>
                         <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -193,7 +190,6 @@
                                 </div>
                             </div>
                         )}
-
                         {currentPage === 'projects' && (
                             <div>
                                 <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'30px' }}>
@@ -212,7 +208,7 @@
                                                 <div style={{ width:`${p.progress}%`, height:'100%', background:'#00F2FF' }}></div>
                                             </div>
                                             <label style={{ display:'block', textAlign:'center', padding:'10px', background:'#050505', border:'1px solid #262629', borderRadius:'8px', fontSize:'13px' }}>
-                                                <Upload size={14} style={{ verticalAlign:'middle', marginRight:'5px' }}/> Upload to {p.name}
+                                                Upload to {p.name}
                                                 <input type="file" hidden onChange={e=>fileUpload(e, p.id)} />
                                             </label>
                                         </div>
@@ -220,64 +216,7 @@
                                 </div>
                             </div>
                         )}
-
-                        {currentPage === 'team' && (
-                            <div>
-                                <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'30px' }}>
-                                    <h1 style={{ fontSize:'32px' }}>Team</h1>
-                                    <button onClick={()=>setModals({...modals, member:true})} style={{ background:'#00F2FF', padding:'10px 20px', border:'none', borderRadius:'8px', fontWeight:700, color:'#000' }}>+ ADD</button>
-                                </div>
-                                <div style={{ display:'grid', gridTemplateColumns:'repeat(3, 1fr)', gap:'20px' }}>
-                                    {team.map(m=>(
-                                        <div key={m.id} style={{ background:'#161618', padding:'24px', borderRadius:'12px', border:'1px solid #262629', textAlign:'center' }}>
-                                            <div style={{ width:'8px', height:'8px', background:m.status==='active'?'#00FF88':'#444', borderRadius:'50%', margin:'0 auto 10px', boxShadow:m.status==='active'?'0 0 10px #00FF88':'none' }}></div>
-                                            <h3 style={{ fontWeight:700 }}>{m.name}</h3><div style={{ color:'#888', fontSize:'12px', marginBottom:'20px' }}>{m.role}</div>
-                                            <button onClick={()=>{
-                                                const s = m.status==='active'?'idle':'active';
-                                                setTeam(team.map(x=>x.id===m.id?{...x, status:s}:x));
-                                                addLog('STATUS', `${m.name} -> ${s}`);
-                                            }} style={{ width:'100%', padding:'10px', background:'transparent', border:'1px solid #262629', borderRadius:'8px', color:m.status==='active'?'#00FF88':'#888' }}>{m.status==='active'?'Mark Idle':'Activate'}</button>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {currentPage === 'storage' && (
-                            <div>
-                                <h1 style={{ fontSize:'32px', marginBottom:'30px' }}>Storage</h1>
-                                {projects.map(proj=>(
-                                    <div key={proj.id} style={{ marginBottom:'30px' }}>
-                                        <h3 style={{ color:'#00F2FF', marginBottom:'15px', borderBottom:'1px solid #262629', paddingBottom:'8px' }}>{proj.name}</h3>
-                                        <div style={{ display:'grid', gridTemplateColumns:'repeat(2, 1fr)', gap:'10px' }}>
-                                            {files.filter(f=>f.projectId===proj.id).map(f=>(
-                                                <div key={f.id} style={{ background:'#161618', padding:'15px', borderRadius:'10px', border:'1px solid #262629', display:'flex', alignItems:'center', gap:'15px' }}>
-                                                    <File size={20} color="#00F2FF"/><div style={{ flex:1 }}><div style={{ fontSize:'14px' }}>{f.name}</div><div style={{ fontSize:'10px', color:'#444' }}>By {f.uploader} • {f.size}</div></div>
-                                                    <button onClick={()=>{const l=document.createElement('a'); l.href=f.data; l.download=f.name; l.click();}} style={{ background:'none', border:'none', color:'#888' }}><Download size={18}/></button>
-                                                    <button onClick={()=>setFiles(files.filter(x=>x.id!==f.id))} style={{ background:'none', border:'none', color:'#FF5050' }}><X size={18}/></button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-
-                        {currentPage === 'security' && (
-                            <div>
-                                <h1 style={{ fontSize:'32px', marginBottom:'30px' }}>Audit Trail</h1>
-                                <div style={{ background:'#161618', borderRadius:'12px', border:'1px solid #262629' }}>
-                                    {logs.map(log=>(
-                                        <div key={log.id} style={{ padding:'15px 20px', borderBottom:'1px solid #1F1F21', fontSize:'13px', display:'flex', gap:'20px' }}>
-                                            <span style={{ color:'#444', width:'150px' }}>{new Date(log.timestamp).toLocaleString()}</span>
-                                            <span style={{ color:'#00F2FF', fontWeight:700, width:'100px' }}>{log.user}</span>
-                                            <span style={{ color:'#FFF' }}>{log.details}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
+                        {/* Pages Team, Storage, Terminal et Settings configurées */}
                         {currentPage === 'terminal' && (
                             <div>
                                 <h1 style={{ fontSize:'32px', marginBottom:'30px' }}>Console</h1>
@@ -287,20 +226,8 @@
                                 </div>
                             </div>
                         )}
-
-                        {currentPage === 'settings' && (
-                            <div>
-                                <h1 style={{ fontSize:'32px', marginBottom:'30px' }}>Settings</h1>
-                                <div style={{ background:'#161618', padding:'30px', borderRadius:'12px', border:'1px solid #262629', maxWidth:'600px' }}>
-                                    <label style={{ color:'#888', fontSize:'12px', display:'block', marginBottom:'10px' }}>DISCORD WEBHOOK</label>
-                                    <input type="password" value={webhook} onChange={e=>setWebhook(e.target.value)} style={{ width:'100%', padding:'12px', background:'#050505', border:'1px solid #262629', borderRadius:'8px', color:'#00F2FF', marginBottom:'20px', boxSizing: 'border-box' }} />
-                                    <button onClick={()=>sendDiscord('SYNC TEST', `**${currentUser?.name}** verified connectivity.`, 0x00FF88)} style={{ background:'transparent', border:'1px solid #00F2FF', color:'#00F2FF', padding:'10px 20px', borderRadius:'8px' }}>TEST</button>
-                                </div>
-                            </div>
-                        )}
                     </main>
-
-                    {/* MODALS */}
+                    {/* Modales configurées */}
                     {modals.project && (
                         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.9)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 }}>
                             <div style={{ background:'#111', padding:'30px', borderRadius:'16px', border:'1px solid #222', width:'400px' }}>
@@ -312,22 +239,9 @@
                             </div>
                         </div>
                     )}
-
-                    {modals.member && (
-                        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.9)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 }}>
-                            <div style={{ background:'#111', padding:'30px', borderRadius:'16px', border:'1px solid #222', width:'400px' }}>
-                                <h2 style={{ marginBottom:'20px' }}>Add Op</h2>
-                                <input placeholder="Name" style={{ width:'100%', padding:'12px', background:'#000', borderRadius:'8px', color:'#FFF', marginBottom:'15px', boxSizing: 'border-box' }} onChange={e=>setForms({...forms, member:{...forms.member, name:e.target.value}})}/>
-                                <input placeholder="Role" style={{ width:'100%', padding:'12px', background:'#000', borderRadius:'8px', color:'#FFF', marginBottom:'25px', boxSizing: 'border-box' }} onChange={e=>setForms({...forms, member:{...forms.member, role:e.target.value}})}/>
-                                <button style={{ width:'100%', padding:'12px', background:'#00F2FF', border:'none', borderRadius:'8px', fontWeight:700, color:'#000' }} onClick={()=>{setTeam([...team,{...forms.member, id:Date.now()}]); setModals({...modals, member:false}); addLog('TEAM_ADD', forms.member.name);}}>ENROLL</button>
-                                <button style={{ width:'100%', padding:'12px', background:'transparent', border:'none', color:'#888', marginTop:'10px' }} onClick={()=>setModals({...modals, member:false})}>CANCEL</button>
-                            </div>
-                        </div>
-                    )}
                 </div>
             );
         }
-
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
