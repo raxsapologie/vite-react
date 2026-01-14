@@ -15,7 +15,8 @@
         button:hover { filter: brightness(1.2); cursor: pointer; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-        input, textarea { outline: none; }
+        input, textarea { outline: none; border: 1px solid #222; }
+        input:focus { border-color: #00F2FF; }
     </style>
 </head>
 <body>
@@ -44,6 +45,7 @@
             });
             const [termData, setTermData] = useState({ input: '', output: ['> KRYNOS Intelligence Hub Online', '> Type "help" for protocols'] });
 
+            // PERSISTENCE
             useEffect(() => {
                 const load = (key, def = '[]') => {
                     try {
@@ -134,8 +136,8 @@
                     <form onSubmit={handleLogin} style={{ background: '#0D0D0E', padding: '40px', borderRadius: '16px', border: '1px solid #1F1F21', width: '320px', textAlign: 'center' }}>
                         <Shield size={48} color="#00F2FF" style={{ marginBottom: '20px' }} />
                         <h2 style={{ color: '#FFF', marginBottom: '25px', letterSpacing: '2px' }}>KRYNOS AUTH</h2>
-                        <input type="text" placeholder="Username" style={{ width: '100%', padding: '12px', background: '#000', border: '1px solid #222', borderRadius: '8px', color: '#FFF', marginBottom: '10px', boxSizing: 'border-box' }} onChange={e=>setAuthForm({...authForm, username: e.target.value})}/>
-                        <input type="password" placeholder="Passkey" style={{ width: '100%', padding: '12px', background: '#000', border: '1px solid #222', borderRadius: '8px', color: '#FFF', marginBottom: '20px', boxSizing: 'border-box' }} onChange={e=>setAuthForm({...authForm, password: e.target.value})}/>
+                        <input type="text" placeholder="Username" style={{ width: '100%', padding: '12px', background: '#000', borderRadius: '8px', color: '#FFF', marginBottom: '10px', boxSizing: 'border-box' }} onChange={e=>setAuthForm({...authForm, username: e.target.value})}/>
+                        <input type="password" placeholder="Passkey" style={{ width: '100%', padding: '12px', background: '#000', borderRadius: '8px', color: '#FFF', marginBottom: '20px', boxSizing: 'border-box' }} onChange={e=>setAuthForm({...authForm, password: e.target.value})}/>
                         <button type="submit" style={{ width: '100%', padding: '12px', background: '#00F2FF', border: 'none', borderRadius: '8px', fontWeight: 'bold', color: '#000' }}>ENTER</button>
                     </form>
                 </div>
@@ -143,6 +145,7 @@
 
             return (
                 <div style={{ display: 'flex', minHeight: '100vh', background: '#050505', color: '#E5E5E5' }}>
+                    {/* SIDEBAR */}
                     <aside style={{ width: '260px', background: '#0D0D0E', borderRight: '1px solid #1F1F21', padding: '30px 20px', position: 'fixed', height: '100vh' }}>
                         <div style={{ color: '#00F2FF', fontWeight: 800, fontSize: '22px', marginBottom: '40px', display: 'flex', alignItems: 'center', gap: '10px' }}><Shield size={24}/> KRYNOS</div>
                         <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -152,7 +155,9 @@
                                 {id:'security', icon:Shield, label:'Security'}, {id:'terminal', icon:Terminal, label:'Terminal'},
                                 {id:'settings', icon:Settings, label:'Settings'}
                             ].map(i => (
-                                <button key={i.id} onClick={()=>setCurrentPage(i.id)} style={{ padding:'12px', background:currentPage===i.id?'#161618':'transparent', border:'none', color:currentPage===i.id?'#00F2FF':'#888', borderRadius:'8px', textAlign:'left', display:'flex', gap:'10px', fontSize:'14px' }}><i.icon size={18}/> {i.label}</button>
+                                <button key={i.id} onClick={()=>setCurrentPage(i.id)} style={{ padding:'12px', background:currentPage===i.id?'#161618':'transparent', border:'none', color:currentPage===i.id?'#00F2FF':'#888', borderRadius:'8px', textAlign:'left', display:'flex', gap:'10px', fontSize:'14px' }}>
+                                    <i.icon size={18}/> {i.label}
+                                </button>
                             ))}
                         </nav>
                         <div style={{ position:'absolute', bottom:'30px', width:'220px', padding:'15px', background:'#111', borderRadius:'12px', border:'1px solid #222' }}>
@@ -161,7 +166,7 @@
                         </div>
                     </aside>
 
-                    <main style={{ marginLeft: '260px', flex: 1, padding: '40px 60px' }}>
+                    <main style={{ marginLeft: '260px', flex: 1, padding: '40px 60px', overflowY: 'auto' }}>
                         {currentPage === 'dashboard' && (
                             <div>
                                 <h1 style={{ fontSize:'32px', marginBottom:'30px' }}>Dashboard</h1>
@@ -231,7 +236,6 @@
                                                 const s = m.status==='active'?'idle':'active';
                                                 setTeam(team.map(x=>x.id===m.id?{...x, status:s}:x));
                                                 addLog('STATUS', `${m.name} -> ${s}`);
-                                                sendDiscord('TEAM UPDATE', `**${m.name}** is now **${s.toUpperCase()}**.`);
                                             }} style={{ width:'100%', padding:'10px', background:'transparent', border:'1px solid #262629', borderRadius:'8px', color:m.status==='active'?'#00FF88':'#888' }}>{m.status==='active'?'Mark Idle':'Activate'}</button>
                                         </div>
                                     ))}
@@ -296,14 +300,15 @@
                         )}
                     </main>
 
+                    {/* MODALS */}
                     {modals.project && (
                         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.9)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 }}>
                             <div style={{ background:'#111', padding:'30px', borderRadius:'16px', border:'1px solid #222', width:'400px' }}>
                                 <h2 style={{ marginBottom:'20px' }}>New Proj</h2>
-                                <input placeholder="Name" style={{ width:'100%', padding:'12px', background:'#000', border:'1px solid #333', borderRadius:'8px', color:'#FFF', marginBottom:'15px', boxSizing: 'border-box' }} onChange={e=>setForms({...forms, project:{...forms.project, name:e.target.value}})}/>
-                                <textarea placeholder="Desc" style={{ width:'100%', padding:'12px', background:'#000', border:'1px solid #333', borderRadius:'8px', color:'#FFF', marginBottom:'15px', height:'80px', boxSizing: 'border-box' }} onChange={e=>setForms({...forms, project:{...forms.project, desc:e.target.value}})}/>
-                                <input type="number" placeholder="Progress %" style={{ width:'100%', padding:'12px', background:'#000', border:'1px solid #333', borderRadius:'8px', color:'#FFF', marginBottom:'20px', boxSizing: 'border-box' }} onChange={e=>setForms({...forms, project:{...forms.project, progress:parseInt(e.target.value)}})}/>
-                                <div style={{ display:'flex', gap:'10px' }}><button style={{ flex:1, padding:'12px', background:'#00F2FF', border:'none', borderRadius:'8px', fontWeight:700, color:'#000' }} onClick={()=>{setProjects([...projects,{...forms.project, id:Date.now()}]); setModals({...modals, project:false}); addLog('PROJ_ADD', forms.project.name); sendDiscord('PROJECT_LAUNCH', `Project **${forms.project.name}** initiated.`);}}>LAUNCH</button><button style={{ flex:1, padding:'12px', background:'transparent', color:'#FFF', border:'1px solid #333', borderRadius:'8px' }} onClick={()=>setModals({...modals, project:false})}>CANCEL</button></div>
+                                <input placeholder="Name" style={{ width:'100%', padding:'12px', background:'#000', borderRadius:'8px', color:'#FFF', marginBottom:'15px', boxSizing: 'border-box' }} onChange={e=>setForms({...forms, project:{...forms.project, name:e.target.value}})}/>
+                                <textarea placeholder="Desc" style={{ width:'100%', padding:'12px', background:'#000', borderRadius:'8px', color:'#FFF', marginBottom:'15px', height:'80px', boxSizing: 'border-box' }} onChange={e=>setForms({...forms, project:{...forms.project, desc:e.target.value}})}/>
+                                <button style={{ width:'100%', padding:'12px', background:'#00F2FF', border:'none', borderRadius:'8px', fontWeight:700, color:'#000' }} onClick={()=>{setProjects([...projects,{...forms.project, id:Date.now(), progress: 0}]); setModals({...modals, project:false}); addLog('PROJ_ADD', forms.project.name);}}>LAUNCH</button>
+                                <button style={{ width:'100%', padding:'12px', background:'transparent', border:'none', color:'#888', marginTop:'10px' }} onClick={()=>setModals({...modals, project:false})}>CANCEL</button>
                             </div>
                         </div>
                     )}
@@ -312,9 +317,10 @@
                         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.9)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000 }}>
                             <div style={{ background:'#111', padding:'30px', borderRadius:'16px', border:'1px solid #222', width:'400px' }}>
                                 <h2 style={{ marginBottom:'20px' }}>Add Op</h2>
-                                <input placeholder="Name" style={{ width:'100%', padding:'12px', background:'#000', border:'1px solid #333', borderRadius:'8px', color:'#FFF', marginBottom:'15px', boxSizing: 'border-box' }} onChange={e=>setForms({...forms, member:{...forms.member, name:e.target.value}})}/>
-                                <input placeholder="Role" style={{ width:'100%', padding:'12px', background:'#000', border:'1px solid #333', borderRadius:'8px', color:'#FFF', marginBottom:'25px', boxSizing: 'border-box' }} onChange={e=>setForms({...forms, member:{...forms.member, role:e.target.value}})}/>
-                                <div style={{ display:'flex', gap:'10px' }}><button style={{ flex:1, padding:'12px', background:'#00F2FF', border:'none', borderRadius:'8px', fontWeight:700, color:'#000' }} onClick={()=>{setTeam([...team,{...forms.member, id:Date.now()}]); setModals({...modals, member:false}); addLog('TEAM_ADD', forms.member.name); sendDiscord('MEMBER_ENROLL', `**${forms.member.name}** added.`);}}>ENROLL</button><button style={{ flex:1, padding:'12px', background:'transparent', color:'#FFF', border:'1px solid #333', borderRadius:'8px' }} onClick={()=>setModals({...modals, member:false})}>CANCEL</button></div>
+                                <input placeholder="Name" style={{ width:'100%', padding:'12px', background:'#000', borderRadius:'8px', color:'#FFF', marginBottom:'15px', boxSizing: 'border-box' }} onChange={e=>setForms({...forms, member:{...forms.member, name:e.target.value}})}/>
+                                <input placeholder="Role" style={{ width:'100%', padding:'12px', background:'#000', borderRadius:'8px', color:'#FFF', marginBottom:'25px', boxSizing: 'border-box' }} onChange={e=>setForms({...forms, member:{...forms.member, role:e.target.value}})}/>
+                                <button style={{ width:'100%', padding:'12px', background:'#00F2FF', border:'none', borderRadius:'8px', fontWeight:700, color:'#000' }} onClick={()=>{setTeam([...team,{...forms.member, id:Date.now()}]); setModals({...modals, member:false}); addLog('TEAM_ADD', forms.member.name);}}>ENROLL</button>
+                                <button style={{ width:'100%', padding:'12px', background:'transparent', border:'none', color:'#888', marginTop:'10px' }} onClick={()=>setModals({...modals, member:false})}>CANCEL</button>
                             </div>
                         </div>
                     )}
